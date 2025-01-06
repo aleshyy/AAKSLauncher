@@ -1,0 +1,17 @@
+# Custom Language File for Launcher Customizer
+
+[ejs.app]
+title = "AAKS Launcher"
+
+[ejs.landing]
+mediaGitHubURL = "https://github.com/aleshyy/aakslauncher"
+mediaDiscordURL = "https://discord.gg/cf7fj6yWtz"
+
+[ejs.settings]
+sourceGithubLink = "https://github.com/aleshyy/aakslauncher"
+supportLink = "https://github.com/aleshyy/aakslauncher"
+
+#[ejs.welcome]
+#welcomeHeader = "BIENVENIDO A PLATAGANG"
+#welcomeDescription = "Nuestra misión es crear una experiencia única para nuestra comunidad, mezclando creatividad, diversión y trabajo en equipo en nuestro servidor de Minecraft. A través del esfuerzo colaborativo de nuestros miembros, hemos diseñado un mundo para que explores, construyas y disfrutes al máximo. Desde los rincones más tranquilos hasta los desafíos más emocionantes, este mundo es tuyo para conquistar. ¿Listo para unirte? ¡No te quedes atrás!"
+#welcomeDescCTA = "Estás a solo unos clics de entrar a PlataGang."
