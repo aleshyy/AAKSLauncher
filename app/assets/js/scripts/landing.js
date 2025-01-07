@@ -235,36 +235,36 @@ const refreshMojangStatuses = async function(){
     document.getElementById('mojang_status_icon').style.color = MojangRestAPI.statusToHex(status)
 }
 
-const refreshServerStatus = async (fade = false) => {
-    loggerLanding.info('Refrescando el estado del servidor.')
-    const serv = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
+// const refreshServerStatus = async (fade = false) => {
+//     loggerLanding.info('Refrescando el estado del servidor.')
+//     const serv = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
 
-    let pLabel = Lang.queryJS('landing.serverStatus.server')
-    let pVal = Lang.queryJS('landing.serverStatus.offline')
+//     let pLabel = Lang.queryJS('landing.serverStatus.server')
+//     let pVal = Lang.queryJS('landing.serverStatus.offline')
 
-    try {
+//     try {
 
-        const servStat = await getServerStatus(47, serv.hostname, serv.port)
-        console.log(servStat)
-        pLabel = Lang.queryJS('landing.serverStatus.players')
-        pVal = servStat.players.online + '/' + servStat.players.max
+//         const servStat = await getServerStatus(47, serv.hostname, serv.port)
+//         console.log(servStat)
+//         pLabel = Lang.queryJS('landing.serverStatus.players')
+//         pVal = servStat.players.online + '/' + servStat.players.max
 
-    } catch (err) {
-        loggerLanding.warn('Imposible obtener el estado del servidor.')
-        loggerLanding.debug(err)
-    }
-    if(fade){
-        $('#server_status_wrapper').fadeOut(250, () => {
-            document.getElementById('landingPlayerLabel').innerHTML = pLabel
-            document.getElementById('player_count').innerHTML = pVal
-            $('#server_status_wrapper').fadeIn(500)
-        })
-    } else {
-        document.getElementById('landingPlayerLabel').innerHTML = pLabel
-        document.getElementById('player_count').innerHTML = pVal
-    }
+//     } catch (err) {
+//         loggerLanding.warn('Imposible obtener el estado del servidor.')
+//         loggerLanding.debug(err)
+//     }
+//     if(fade){
+//         $('#server_status_wrapper').fadeOut(250, () => {
+//             document.getElementById('landingPlayerLabel').innerHTML = pLabel
+//             document.getElementById('player_count').innerHTML = pVal
+//             $('#server_status_wrapper').fadeIn(500)
+//         })
+//     } else {
+//         document.getElementById('landingPlayerLabel').innerHTML = pLabel
+//         document.getElementById('player_count').innerHTML = pVal
+//     }
     
-}
+// }
 
 refreshMojangStatuses()
 // Server Status is refreshed in uibinder.js on distributionIndexDone.
@@ -272,7 +272,7 @@ refreshMojangStatuses()
 // Refresh statuses every hour. The status page itself refreshes every day so...
 let mojangStatusListener = setInterval(() => refreshMojangStatuses(true), 60*60*1000)
 // Set refresh rate to once every 5 minutes.
-let serverStatusListener = setInterval(() => refreshServerStatus(true), 300000)
+// let serverStatusListener = setInterval(() => refreshServerStatus(true), 300000)
 
 /**
  * Shows an error overlay, toggles off the launch area.
@@ -392,7 +392,7 @@ async function downloadJava(effectiveJavaOptions, launchAfter = true) {
     setDownloadPercentage(100)
 
     if(received != asset.size) {
-        loggerLanding.warn(`Descarga de Java: Se esperaba ${asset.size} bytes pero se recibieron ${received}`)
+        loggerLanding.warn(`Descarga de ${asset.size} bytes but received ${received}`)
         if(!await validateLocalFile(asset.path, asset.algo, asset.hash)) {
             log.error(`Los hashes de ${asset.id} no coinciden, pueden estar corruptos.`)
             // Don't know how this could happen, but report it.
