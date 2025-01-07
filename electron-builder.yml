@@ -26,26 +26,6 @@ nsis:
   allowElevation: true
   allowToChangeInstallationDirectory: true
 
-# macOS Configuration
-mac:
-  target:
-    - target: 'dmg'
-      arch:
-        - 'x64'
-        - 'arm64'
-  artifactName: '${productName}-instalador-${version}-${arch}.${ext}'
-  category: 'public.app-category.games'
-
-# Linux Configuration
-linux: 
-  target: 'AppImage'
-  maintainer: 'aleshy'
-  vendor: 'aleshy'
-  synopsis: 'Launcher de mods'
-  description: 'Lanzador personalizado que permite a los usuarios unirse a servidores con modificaciones. Todos los mods, configuraciones y actualizaciones se gestionan automáticamente.'
-  category: 'Game'
-
-
 directories:
   buildResources: 'build'
   output: 'dist'

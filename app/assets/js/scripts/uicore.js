@@ -27,8 +27,8 @@ window.eval = global.eval = function () {
 
 // Display warning when devtools window is opened.
 remote.getCurrentWebContents().on('devtools-opened', () => {
-    console.log('%cLa consola es oscura y llena de horrores.', 'color: white; -webkit-text-stroke: 4px #a02d2a; font-size: 60px; font-weight: bold')
-    console.log('%cSi te dijeron que tenias que pegar algo acá, te están afanando.', 'font-size: 16px')
+    console.log('%cLa consola es oscura y está llena de horrores.', 'color: white; -webkit-text-stroke: 4px #a02d2a; font-size: 60px; font-weight: bold')
+    console.log('%cSi te dijeron que tenías que pegar algo acá, te quieren afanar la cuenta.', 'font-size: 16px')
     console.log('%cSi no sabés que hacés acá cerrá la ventana, y andá a dormir.', 'font-size: 16px')
 })
 
