@@ -39,8 +39,8 @@ mac:
 # Linux Configuration
 linux: 
   target: 'AppImage'
-  maintainer: 'Alejandro Silvera'
-  vendor: 'Alejandro Silvera'
+  maintainer: 'aleshy'
+  vendor: 'aleshy'
   synopsis: 'Launcher de mods'
   description: 'Lanzador personalizado que permite a los usuarios unirse a servidores con modificaciones. Todos los mods, configuraciones y actualizaciones se gestionan automáticamente.'
   category: 'Game'
