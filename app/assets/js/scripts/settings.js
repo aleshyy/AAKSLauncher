@@ -326,6 +326,7 @@ function fullSettingsSave() {
     saveModConfiguration()
     ConfigManager.save()
     saveDropinModConfiguration()
+    saveResourcepackSettings()
     saveShaderpackSettings()
 }
 
@@ -951,6 +952,8 @@ document.addEventListener('keydown', async (e) => {
             await reloadDropinMods()
             saveShaderpackSettings()
             await resolveShaderpacksForUI()
+            saveResourcepackSettings()
+            await resolvesaveResourcepackForUI()
         }
     }
 })
@@ -962,7 +965,7 @@ async function reloadDropinMods(){
     bindModsToggleSwitch()
 }
 
-// Shaderpack
+// Shaderpack & Resourcepack Tab
 
 let CACHE_SETTINGS_INSTANCE_DIR
 let CACHE_SHADERPACKS
@@ -1042,6 +1045,85 @@ function bindShaderpackButton() {
     }
 }
 
+// Resourcepack tab
+
+let CACHE_RESOURCEPACKS
+let CACHE_SELECTED_RESOURCEPACK
+
+/**
+ * Load resourcepack information.
+ */
+async function resolveResourcepacksForUI(){
+    const serv = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
+    CACHE_SETTINGS_INSTANCE_DIR = path.join(ConfigManager.getInstanceDirectory(), serv.rawServer.id)
+    CACHE_RESOURCEPACKS = DropinModUtil.scanForResourcepacks(CACHE_SETTINGS_INSTANCE_DIR)
+    CACHE_SELECTED_RESOURCEPACK = DropinModUtil.getEnabledResourcepack(CACHE_SETTINGS_INSTANCE_DIR)
+
+    setResourcepackOptions(CACHE_RESOURCEPACKS, CACHE_SELECTED_RESOURCEPACK)
+}
+
+function setResourcepackOptions(arr, selected){
+    const cont = document.getElementById('settingsResourcepacksOptions')
+    cont.innerHTML = ''
+    for(let opt of arr) {
+        const d = document.createElement('DIV')
+        d.innerHTML = opt.name
+        d.setAttribute('value', opt.fullName)
+        if(opt.fullName === selected) {
+            d.setAttribute('selected', '')
+            document.getElementById('settingsResourcepacksSelected').innerHTML = opt.name
+        }
+        d.addEventListener('click', function(e) {
+            this.parentNode.previousElementSibling.innerHTML = this.innerHTML
+            for(let sib of this.parentNode.children){
+                sib.removeAttribute('selected')
+            }
+            this.setAttribute('selected', '')
+            closeSettingsSelect()
+        })
+        cont.appendChild(d)
+    }
+}
+
+function saveResourcepackSettings(){
+    let sel = 'OFF'
+    for(let opt of document.getElementById('settingsResourcepacksOptions').childNodes){
+        if(opt.hasAttribute('selected')){
+            sel = opt.getAttribute('value')
+        }
+    }
+    DropinModUtil.setEnabledResourcepack(CACHE_SETTINGS_INSTANCE_DIR, sel)
+}
+
+function bindResourcepackButton() {
+    const spBtn = document.getElementById('settingsResourcepackButton')
+    spBtn.onclick = () => {
+        const p = path.join(CACHE_SETTINGS_INSTANCE_DIR, 'resourcepacks')
+        DropinModUtil.validateDir(p)
+        shell.openPath(p)
+    }
+    spBtn.ondragenter = e => {
+        e.dataTransfer.dropEffect = 'move'
+        spBtn.setAttribute('drag', '')
+        e.preventDefault()
+    }
+    spBtn.ondragover = e => {
+        e.preventDefault()
+    }
+    spBtn.ondragleave = e => {
+        spBtn.removeAttribute('drag')
+    }
+
+    spBtn.ondrop = async e => {
+        spBtn.removeAttribute('drag')
+        e.preventDefault()
+
+        DropinModUtil.addResourcepacks(e.dataTransfer.files, CACHE_SETTINGS_INSTANCE_DIR)
+        saveResourcepackSettings()
+        await resolveResourcepacksForUI()
+    }
+}
+
 // Server status bar functions.
 
 /**
@@ -1110,9 +1192,11 @@ async function prepareModsTab(first){
     await resolveModsForUI()
     await resolveDropinModsForUI()
     await resolveShaderpacksForUI()
+    await resolveResourcepacksForUI()
     bindDropinModsRemoveButton()
     bindDropinModFileSystemButton()
     bindShaderpackButton()
+    bindResourcepackButton()
     bindModsToggleSwitch()
     await loadSelectedServerOnModsTab()
 }
