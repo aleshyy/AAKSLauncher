@@ -93,7 +93,7 @@ class ProcessBuilder {
             data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
         })
         child.on('close', (code, signal) => {
-            logger.info('Saliendo con código', code)
+            logger.info('Saliendo con el código', code)
             fs.remove(tempNativePath, (err) => {
                 if(err){
                     logger.warn('Error mientras se eliminaba el directorio temporal.', err)

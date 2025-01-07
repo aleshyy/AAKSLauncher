@@ -191,7 +191,7 @@ exports.getEnabledShaderpack = function(instanceDir){
         if(match != null){
             return match[1]
         } else {
-            console.warn('WARNING: Shaderpack regex failed.')
+            console.warn('ADVERTENCIA: Regex de shaderpack falló.')
         }
     }
     return 'OFF'

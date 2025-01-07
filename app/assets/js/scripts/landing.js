@@ -392,7 +392,7 @@ async function downloadJava(effectiveJavaOptions, launchAfter = true) {
     setDownloadPercentage(100)
 
     if(received != asset.size) {
-        loggerLanding.warn(`Java Download: Expected ${asset.size} bytes but received ${received}`)
+        loggerLanding.warn(`Descarga de Java: Se esperaba ${asset.size} bytes pero se recibieron ${received}`)
         if(!await validateLocalFile(asset.path, asset.algo, asset.hash)) {
             log.error(`Los hashes de ${asset.id} no coinciden, pueden estar corruptos.`)
             // Don't know how this could happen, but report it.
