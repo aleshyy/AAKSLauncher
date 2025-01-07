@@ -339,8 +339,8 @@ settingsNavDone.onclick = () => {
  * Account Management Tab
  */
 
-const msftLoginLogger = LoggerUtil.getLogger('Microsoft Login')
-const msftLogoutLogger = LoggerUtil.getLogger('Microsoft Logout')
+const msftLoginLogger = LoggerUtil.getLogger('Microsoft')
+const msftLogoutLogger = LoggerUtil.getLogger('Microsoft')
 
 // Bind the add mojang account button.
 document.getElementById('settingsAddMojangAccount').onclick = (e) => {
@@ -368,7 +368,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
 
             if(arguments_[1] === MSFT_ERROR.NOT_FINISHED) {
                 // User cancelled.
-                msftLoginLogger.info('Login cancelled by user.')
+                msftLoginLogger.info('Inicio de sesión cancelado por el usuario.')
                 return
             }
 
@@ -394,10 +394,10 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
                 // This is probably if you messed up the app registration with Azure.      
                 let error = queryMap.error // Error might be 'access_denied' ?
                 let errorDesc = queryMap.error_description
-                console.log('Error getting authCode, is Azure application registered correctly?')
+                console.log('Error obteniendo el código de autentificación, ¿está registrada la aplicación de Azure correctamente?')
                 console.log(error)
                 console.log(errorDesc)
-                console.log('Full query map: ', queryMap)
+                console.log('Mapa de consulta completo: ', queryMap)
                 setOverlayContent(
                     error,
                     errorDesc,
@@ -411,7 +411,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
             })
         } else {
 
-            msftLoginLogger.info('Acquired authCode, proceeding with authentication.')
+            msftLoginLogger.info('Adquirido código de autenticación de Microsoft.')
 
             const authCode = queryMap.code
             AuthManager.addMicrosoftAccount(authCode).then(value => {
@@ -424,11 +424,11 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
 
                     let actualDisplayableError
                     if(isDisplayableError(displayableError)) {
-                        msftLoginLogger.error('Error while logging in.', displayableError)
+                        msftLoginLogger.error('Error al iniciar sesión.', displayableError)
                         actualDisplayableError = displayableError
                     } else {
                         // Uh oh.
-                        msftLoginLogger.error('Unhandled error during login.', displayableError)
+                        msftLoginLogger.error('Error desconocido al iniciar sesión.', displayableError)
                         actualDisplayableError = Lang.queryJS('login.error.unknown')
                     }
 
@@ -546,7 +546,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
 
             if(arguments_.length > 1 && arguments_[1] === MSFT_ERROR.NOT_FINISHED) {
                 // User cancelled.
-                msftLogoutLogger.info('Logout cancelled by user.')
+                msftLogoutLogger.info('Salida de sesión cancelada por el usuario.')
                 return
             }
 
@@ -567,7 +567,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
         const isLastAccount = arguments_[2]
         const prevSelAcc = ConfigManager.getSelectedAccount()
 
-        msftLogoutLogger.info('Logout Successful. uuid:', uuid)
+        msftLogoutLogger.info('Salida de sesión exitosa. UUID:', uuid)
         
         AuthManager.removeMicrosoftAccount(uuid)
             .then(() => {

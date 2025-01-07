@@ -13,7 +13,7 @@ const { LoggerUtil }                 = require('helios-core')
 const Lang                           = require('./assets/js/langloader')
 
 const loggerUICore             = LoggerUtil.getLogger('UICore')
-const loggerAutoUpdater        = LoggerUtil.getLogger('AutoUpdater')
+const loggerAutoUpdater        = LoggerUtil.getLogger('Actualizaciones')
 
 // Log deprecation and process warnings.
 process.traceProcessWarnings = true
@@ -28,8 +28,8 @@ window.eval = global.eval = function () {
 // Display warning when devtools window is opened.
 remote.getCurrentWebContents().on('devtools-opened', () => {
     console.log('%cLa consola es oscura y llena de horrores.', 'color: white; -webkit-text-stroke: 4px #a02d2a; font-size: 60px; font-weight: bold')
-    console.log('%cSi te dijeron\'que tenias que pegar algo aca\'te están afanando.', 'font-size: 16px')
-    console.log('%cSi no sabés que hacés acá\'cerrá la ventana.', 'font-size: 16px')
+    console.log('%cSi te dijeron que tenias que pegar algo acá, te están afanando.', 'font-size: 16px')
+    console.log('%cSi no sabés que hacés acá cerrá la ventana, y andá a dormir.', 'font-size: 16px')
 })
 
 // Disable zoom, needed for darwin.
@@ -42,21 +42,21 @@ if(!isDev){
     ipcRenderer.on('autoUpdateNotification', (event, arg, info) => {
         switch(arg){
             case 'checking-for-update':
-                loggerAutoUpdater.info('Checking for update..')
+                loggerAutoUpdater.info('Buscando actualizaciones...')
                 settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkingForUpdateButton'), true)
                 break
             case 'update-available':
                 loggerAutoUpdater.info('Nueva actualización disponible', info.version)
                 
                 if(process.platform === 'darwin'){
-                    info.darwindownload = `https://github.com/aleshyy/AAKSLauncher/releases/download/v${info.version}/AAKS-Launcher-instalador-${info.version}${process.arch === 'arm64' ? '-arm64' : '-x64'}.dmg`
+                    info.darwindownload = `https://github.com/aleshyy/AAKSLauncher/releases/download/v${info.version}/AAKSLauncher-instalador-${info.version}${process.arch === 'arm64' ? '-arm64' : '-x64'}.dmg`
                     showUpdateUI(info)
                 }
                 
                 populateSettingsUpdateInformation(info)
                 break
             case 'update-downloaded':
-                loggerAutoUpdater.info('Update ' + info.version + ' ready to be installed.')
+                loggerAutoUpdater.info('Actualización ' + info.version + ' lista para ser instalada.')
                 settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.installNowButton'), false, () => {
                     if(!isDev){
                         ipcRenderer.send('autoUpdateAction', 'installUpdateNow')
@@ -65,7 +65,7 @@ if(!isDev){
                 showUpdateUI(info)
                 break
             case 'update-not-available':
-                loggerAutoUpdater.info('No new update found.')
+                loggerAutoUpdater.info('No hay actualizaciones disponibles.')
                 settingsUpdateButtonStatus(Lang.queryJS('uicore.autoUpdate.checkForUpdatesButton'))
                 break
             case 'ready':
@@ -77,17 +77,17 @@ if(!isDev){
             case 'realerror':
                 if(info != null && info.code != null){
                     if(info.code === 'ERR_UPDATER_INVALID_RELEASE_FEED'){
-                        loggerAutoUpdater.info('No suitable releases found.')
+                        loggerAutoUpdater.info('No se pudo comprobar actualizaciones: feed de actualizaciones inválido.')
                     } else if(info.code === 'ERR_XML_MISSED_ELEMENT'){
-                        loggerAutoUpdater.info('No releases found.')
+                        loggerAutoUpdater.info('No hay actualizaciones disponibles.')
                     } else {
-                        loggerAutoUpdater.error('Error during update check..', info)
-                        loggerAutoUpdater.debug('Error Code:', info.code)
+                        loggerAutoUpdater.error('Error durante la comprobación de actualizaciones.', info)
+                        loggerAutoUpdater.debug('Código de error:', info.code)
                     }
                 }
                 break
             default:
-                loggerAutoUpdater.info('Unknown argument', arg)
+                loggerAutoUpdater.info('Argumento desconocido', arg)
                 break
         }
     })
@@ -135,7 +135,7 @@ $(function(){
 
 document.addEventListener('readystatechange', function () {
     if (document.readyState === 'interactive'){
-        loggerUICore.info('UICore Initializing..')
+        loggerUICore.info('Inicializando UICore...')
 
         // Bind close button.
         Array.from(document.getElementsByClassName('fCb')).map((val) => {

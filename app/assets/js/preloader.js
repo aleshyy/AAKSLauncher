@@ -10,9 +10,9 @@ const { LoggerUtil } = require('helios-core')
 // eslint-disable-next-line no-unused-vars
 const { HeliosDistribution } = require('helios-core/common')
 
-const logger = LoggerUtil.getLogger('Preloader')
+const logger = LoggerUtil.getLogger('Precargador')
 
-logger.info('Loading..')
+logger.info('Cargando...')
 
 // Load ConfigManager
 ConfigManager.load()
@@ -34,7 +34,7 @@ function onDistroLoad(data){
         
         // Resolve the selected server if its value has yet to be set.
         if(ConfigManager.getSelectedServer() == null || data.getServerById(ConfigManager.getSelectedServer()) == null){
-            logger.info('Determining default selected server..')
+            logger.info('Determinando servidor por defecto...')
             ConfigManager.setSelectedServer(data.getMainServer().rawServer.id)
             ConfigManager.save()
         }
@@ -45,13 +45,13 @@ function onDistroLoad(data){
 // Ensure Distribution is downloaded and cached.
 DistroAPI.getDistribution()
     .then(heliosDistro => {
-        logger.info('Loaded distribution index.')
+        logger.info('Cargado índice de distribución.')
 
         onDistroLoad(heliosDistro)
     })
     .catch(err => {
-        logger.info('Failed to load an older version of the distribution index.')
-        logger.info('Application cannot run.')
+        logger.info('Falló al cargar índice de distribución.')
+        logger.info('La aplicación no podrá continuar sin el índice de distribución.')
         logger.error(err)
 
         onDistroLoad(null)
@@ -60,8 +60,8 @@ DistroAPI.getDistribution()
 // Clean up temp dir incase previous launches ended unexpectedly. 
 fs.remove(path.join(os.tmpdir(), ConfigManager.getTempNativeFolder()), (err) => {
     if(err){
-        logger.warn('Error while cleaning natives directory', err)
+        logger.warn('Error mientras se limpiaba el directorio nativo.', err)
     } else {
-        logger.info('Cleaned natives directory.')
+        logger.info('Limpieza de directorio nativo completada.')
     }
 })

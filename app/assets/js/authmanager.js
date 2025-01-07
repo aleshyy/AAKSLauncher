@@ -17,7 +17,7 @@ const { MicrosoftAuth, MicrosoftErrorCode } = require('helios-core/microsoft')
 const { AZURE_CLIENT_ID }    = require('./ipcconstants')
 const Lang = require('./langloader')
 
-const log = LoggerUtil.getLogger('AuthManager')
+const log = LoggerUtil.getLogger('Autenticación')
 
 // Error messages
 
@@ -124,7 +124,7 @@ function mojangErrorDisplayable(errorCode) {
                 desc: Lang.queryJS('auth.mojang.error.unknownErrorDesc')
             }
         default:
-            throw new Error(`Unknown error code: ${errorCode}`)
+            throw new Error(`Error desconocido: ${errorCode}`)
     }
 }
 
@@ -282,11 +282,11 @@ exports.removeMojangAccount = async function(uuid){
             ConfigManager.save()
             return Promise.resolve()
         } else {
-            log.error('Error while removing account', response.error)
+            log.error('Error mientras se eliminaba la cuenta', response.error)
             return Promise.reject(response.error)
         }
     } catch (err){
-        log.error('Error while removing account', err)
+        log.error('Error mientras se eliminaba la cuenta', err)
         return Promise.reject(err)
     }
 }
@@ -304,7 +304,7 @@ exports.removeMicrosoftAccount = async function(uuid){
         ConfigManager.save()
         return Promise.resolve()
     } catch (err){
-        log.error('Error while removing account', err)
+        log.error('Error mientras se eliminaba la cuenta', err)
         return Promise.reject(err)
     }
 }
@@ -330,14 +330,14 @@ async function validateSelectedMojangAccount(){
                 ConfigManager.updateMojangAuthAccount(current.uuid, session.accessToken)
                 ConfigManager.save()
             } else {
-                log.error('Error while validating selected profile:', refreshResponse.error)
-                log.info('Account access token is invalid.')
+                log.error('Error al validar el perfil seleccionado:', refreshResponse.error)
+                log.info('El token de acceso de la cuenta no es válido.')
                 return false
             }
-            log.info('Account access token validated.')
+            log.info('Token de acceso de la cuenta validado.')
             return true
         } else {
-            log.info('Account access token validated.')
+            log.info('Token de acceso de la cuenta validado.')
             return true
         }
     }

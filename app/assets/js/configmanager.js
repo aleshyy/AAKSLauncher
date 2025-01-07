@@ -3,7 +3,7 @@ const { LoggerUtil } = require('helios-core')
 const os   = require('os')
 const path = require('path')
 
-const logger = LoggerUtil.getLogger('ConfigManager')
+const logger = LoggerUtil.getLogger('Gestor')
 
 const sysRoot = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME)
 
@@ -140,8 +140,8 @@ exports.load = function(){
             doValidate = true
         } catch (err){
             logger.error(err)
-            logger.info('Configuration file contains malformed JSON or is corrupt.')
-            logger.info('Generating a new configuration file.')
+            logger.info('El archivo de configuración contiene JSON mal formado o está dañado.')
+            logger.info('Generando un nuevo archivo de configuración...')
             fs.ensureDirSync(path.join(configPath, '..'))
             config = DEFAULT_CONFIG
             exports.save()
@@ -151,7 +151,7 @@ exports.load = function(){
             exports.save()
         }
     }
-    logger.info('Successfully Loaded')
+    logger.info('Cargado con éxito el archivo de configuración.')
 }
 
 /**

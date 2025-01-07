@@ -10,7 +10,7 @@ const path                  = require('path')
 
 const ConfigManager            = require('./configmanager')
 
-const logger = LoggerUtil.getLogger('ProcessBuilder')
+const logger = LoggerUtil.getLogger('Procesos')
 
 
 /**
@@ -49,9 +49,9 @@ class ProcessBuilder {
         const tempNativePath = path.join(os.tmpdir(), ConfigManager.getTempNativeFolder(), crypto.pseudoRandomBytes(16).toString('hex'))
         process.throwDeprecation = true
         this.setupLiteLoader()
-        logger.info('Using liteloader:', this.usingLiteLoader)
+        logger.info('Usando Lite Loader:', this.usingLiteLoader)
         this.usingFabricLoader = this.server.modules.some(mdl => mdl.rawModule.type === Type.Fabric)
-        logger.info('Using fabric loader:', this.usingFabricLoader)
+        logger.info('Usando Fabric Loader:', this.usingFabricLoader)
         const modObj = this.resolveModConfiguration(ConfigManager.getModConfiguration(this.server.rawServer.id).mods, this.server.modules)
         
         // Mod list below 1.13
@@ -71,7 +71,7 @@ class ProcessBuilder {
             args = args.concat(this.constructModList(modObj.fMods))
         }
 
-        logger.info('Launch Arguments:', args)
+        logger.info('Argumentos de lanzamiento:', args)
 
         const child = child_process.spawn(ConfigManager.getJavaExecutable(this.server.rawServer.id), args, {
             cwd: this.gameDir,
@@ -93,12 +93,12 @@ class ProcessBuilder {
             data.trim().split('\n').forEach(x => console.log(`\x1b[31m[Minecraft]\x1b[0m ${x}`))
         })
         child.on('close', (code, signal) => {
-            logger.info('Exited with code', code)
+            logger.info('Saliendo con código', code)
             fs.remove(tempNativePath, (err) => {
                 if(err){
-                    logger.warn('Error while deleting temp dir', err)
+                    logger.warn('Error mientras se eliminaba el directorio temporal.', err)
                 } else {
-                    logger.info('Temp dir deleted successfully.')
+                    logger.info('Directorio temporal eliminado.')
                 }
             })
         })
@@ -748,7 +748,7 @@ class ProcessBuilder {
                         if(!shouldExclude){
                             fs.writeFile(path.join(tempNativePath, fileName), zipEntries[i].getData(), (err) => {
                                 if(err){
-                                    logger.error('Error while extracting native library:', err)
+                                    logger.error('Error mientras se extraía la biblioteca nativa:', err)
                                 }
                             })
                         }
@@ -799,7 +799,7 @@ class ProcessBuilder {
                         if(!shouldExclude){
                             fs.writeFile(path.join(tempNativePath, extractName), zipEntries[i].getData(), (err) => {
                                 if(err){
-                                    logger.error('Error while extracting native library:', err)
+                                    logger.error('Error mientras se extraía la biblioteca nativa:', err)
                                 }
                             })
                         }

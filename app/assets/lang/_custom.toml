@@ -1,4 +1,4 @@
-# Custom Language File for Launcher Customizer
+# Custom Language File for AAKS Launcher
 
 [ejs.app]
 title = "AAKS Launcher"
@@ -12,6 +12,6 @@ sourceGithubLink = "https://github.com/aleshyy/aakslauncher"
 supportLink = "https://github.com/aleshyy/aakslauncher"
 
 #[ejs.welcome]
-#welcomeHeader = "BIENVENIDO A PLATAGANG"
-#welcomeDescription = "Nuestra misión es crear una experiencia única para nuestra comunidad, mezclando creatividad, diversión y trabajo en equipo en nuestro servidor de Minecraft. A través del esfuerzo colaborativo de nuestros miembros, hemos diseñado un mundo para que explores, construyas y disfrutes al máximo. Desde los rincones más tranquilos hasta los desafíos más emocionantes, este mundo es tuyo para conquistar. ¿Listo para unirte? ¡No te quedes atrás!"
-#welcomeDescCTA = "Estás a solo unos clics de entrar a PlataGang."
+#welcomeHeader = "Hola, esto es AAKS Launcher"
+#welcomeDescription = "Nuestra misión es crear una experiencia única, facilitando el acceso a nuestros servidores de Minecraft."
+#welcomeDescCTA = "Estás a solo unos clics de entrar al paraíso AAKS Launcher."

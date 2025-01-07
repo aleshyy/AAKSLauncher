@@ -1,6 +1,6 @@
 appId: 'aakslauncher'
-productName: 'AAKS-Launcher'
-artifactName: '${productName}-instalador-${version}.${ext}'
+productName: 'AAKS Launcher'
+artifactName: 'AAKSLauncher-instalador-${version}.${ext}'
 
 copyright: '© aleshy'
 
