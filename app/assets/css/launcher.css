@@ -3974,7 +3974,7 @@ input:checked + .toggleSwitchSlider:before {
 /* Stationary image for the spinner. */
 #loadCenterImage {
     position: absolute;
-    width: 277px;
+    width: 233px;
     height: auto;
 }
 
