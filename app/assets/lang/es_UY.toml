@@ -3,6 +3,7 @@ updateAvailableTooltip = "Actualización disponible"
 usernamePlaceholder = "Usuario"
 usernameEditButton = "Editar"
 settingsTooltip = "Ajustes"
+landingMessage = "¡Bienvenid@!"
 serverStatus = "SERVIDOR"
 serverStatusPlaceholder = "DESCONOCIDO"
 mojangStatus = "ESTADO DE MOJANG"
@@ -110,7 +111,7 @@ aboutTabHeaderDesc = "Ver información y notas de la versión para la versión a
 aboutTitle = "{appName}"
 stableRelease = "Versión estable"
 versionText = "Versión "
-sourceGithub = "Fuente (GitHub)"
+#sourceGithub = "Fuente (GitHub)"
 support = "Soporte"
 devToolsConsole = "Consola de herramientas de desarrollador"
 releaseNotes = "Notas de la versión"
@@ -127,7 +128,10 @@ updateReleaseNotes = "Notas de la versión de la actualización"
 waitingText = "Esperando a Microsoft..."
 
 [ejs.welcome]
-continueButton = "Continuar"
+welcomeHeader = "¡Bienvenid@ a AAKS Launcher!"
+welcomeDescription = "Instalar mods puede ser más complicado que hacer un asado en plena tormenta, pero tranqui, estamos para salvarte. Vos relajate, que nosotros hacemos la magia."
+welcomeDescCTA = "Estás a un par de clics de mandarte al server. 😎"
+continueButton = "¡Dale, vamos!"
 
 [js.discord]
 waiting = "Esperando cliente..."
