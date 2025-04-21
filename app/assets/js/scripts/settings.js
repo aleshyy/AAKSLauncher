@@ -1527,7 +1527,7 @@ function populateReleaseNotes(){
                 if(id === version){
                     settingsAboutChangelogTitle.innerHTML = entry.find('title').text()
                     settingsAboutChangelogText.innerHTML = entry.find('content').text()
-                    settingsAboutChangelogButton.href = entry.find('link').attr('href')
+                    // settingsAboutChangelogButton.href = entry.find('link').attr('href')
                 }
             }
 
