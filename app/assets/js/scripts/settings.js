@@ -43,7 +43,7 @@ bindSettingsSelect()
 
 function bindFileSelectors(){
     for(let ele of document.getElementsByClassName('settingsFileSelButton')){
-        
+
         ele.onclick = async e => {
             const isJavaExecSel = ele.id === 'settingsJavaExecSel'
             const directoryDialog = ele.hasAttribute('dialogDirectory') && ele.getAttribute('dialogDirectory') == 'true'
@@ -237,7 +237,7 @@ let selectedSettingsTab = 'settingsTabAccount'
 /**
  * Modify the settings container UI when the scroll threshold reaches
  * a certain poin.
- * 
+ *
  * @param {UIEvent} e The scroll event.
  */
 function settingsTabScrollListener(e){
@@ -264,7 +264,7 @@ function setupSettingsTabs(){
 /**
  * Settings nav item onclick lisener. Function is exposed so that
  * other UI elements can quickly toggle to a certain tab from other views.
- * 
+ *
  * @param {Element} ele The nav item which has been clicked.
  * @param {boolean} fade Optional. True to fade transition.
  */
@@ -314,7 +314,7 @@ const settingsNavDone = document.getElementById('settingsNavDone')
 
 /**
  * Set if the settings save (done) button is disabled.
- * 
+ *
  * @param {boolean} v True to disable, false to enable.
  */
 function settingsSaveDisabled(v){
@@ -383,7 +383,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGIN, (_, ...arguments_) => {
         if (Object.prototype.hasOwnProperty.call(queryMap, 'error')) {
             switchView(getCurrentView(), viewOnClose, 500, 500, () => {
                 // TODO Dont know what these errors are. Just show them I guess.
-                // This is probably if you messed up the app registration with Azure.      
+                // This is probably if you messed up the app registration with Azure.
                 let error = queryMap.error // Error might be 'access_denied' ?
                 let errorDesc = queryMap.error_description
                 console.log('Error obteniendo el código de autentificación, ¿está registrada la aplicación de Azure correctamente?')
@@ -488,7 +488,7 @@ function bindAuthAccountLogOut(){
             } else {
                 processLogOut(val, isLastAccount)
             }
-            
+
         }
     })
 }
@@ -496,7 +496,7 @@ function bindAuthAccountLogOut(){
 let msAccDomElementCache
 /**
  * Process a log out.
- * 
+ *
  * @param {Element} val The log out button element.
  * @param {boolean} isLastAccount If this logout is on the last added account.
  */
@@ -545,13 +545,13 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
             toggleOverlay(true)
         })
     } else if(arguments_[0] === MSFT_REPLY_TYPE.SUCCESS) {
-        
+
         const uuid = arguments_[1]
         const isLastAccount = arguments_[2]
         const prevSelAcc = ConfigManager.getSelectedAccount()
 
         msftLogoutLogger.info('Salida de sesión exitosa. UUID:', uuid)
-        
+
         AuthManager.removeMicrosoftAccount(uuid)
             .then(() => {
                 if(!isLastAccount && uuid === prevSelAcc.uuid){
@@ -583,7 +583,7 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
 /**
  * Refreshes the status of the selected account on the auth account
  * elements.
- * 
+ *
  * @param {string} uuid The UUID of the new selected account.
  */
 function refreshAuthAccountSelected(uuid){
@@ -702,7 +702,7 @@ async function resolveModsForUI(){
 
 /**
  * Recursively build the mod UI elements.
- * 
+ *
  * @param {Object[]} mdls An array of modules to parse.
  * @param {boolean} submodules Whether or not we are parsing submodules.
  * @param {Object} servConf The server configuration object for this module level.
@@ -802,7 +802,7 @@ function saveModConfiguration(){
 
 /**
  * Recursively save mod config with submods.
- * 
+ *
  * @param {Object} modConf Mod config object to save.
  */
 function _saveModConfiguration(modConf){
@@ -953,7 +953,7 @@ document.addEventListener('keydown', async (e) => {
             saveShaderpackSettings()
             await resolveShaderpacksForUI()
             saveResourcepackSettings()
-            await resolvesaveResourcepackForUI()
+            await resolveResourcepacksForUI()
         }
     }
 })
@@ -1065,34 +1065,163 @@ async function resolveResourcepacksForUI(){
 function setResourcepackOptions(arr, selected){
     const cont = document.getElementById('settingsResourcepacksOptions')
     cont.innerHTML = ''
+
+    // Create a header to explain multi-selection
+    const header = document.createElement('DIV')
+    header.innerHTML = 'Selecciona múltiples paquetes (Ctrl+Click)'
+    header.className = 'resourcepackOptionsHeader'
+    header.style.fontStyle = 'italic'
+    header.style.fontSize = '12px'
+    header.style.color = '#ccc'
+    header.style.padding = '5px'
+    header.style.borderBottom = '1px solid rgba(255, 255, 255, 0.2)'
+    header.style.marginBottom = '5px'
+    cont.appendChild(header)
+
+    // Track selected packs
+    let selectedPacks = []
+    if (Array.isArray(selected)) {
+        selectedPacks = selected
+    } else if (selected && selected !== 'OFF') {
+        selectedPacks = [selected]
+    }
+
+    // Update the selected display text
+    function updateSelectedDisplay() {
+        if (selectedPacks.length === 0 || (selectedPacks.length === 1 && selectedPacks[0] === 'OFF')) {
+            document.getElementById('settingsResourcepacksSelected').innerHTML = 'Ninguno (desactivado)'
+        } else if (selectedPacks.length === 1) {
+            // Find the name for this pack
+            const pack = arr.find(p => p.fullName === selectedPacks[0])
+            document.getElementById('settingsResourcepacksSelected').innerHTML = pack ? pack.name : selectedPacks[0]
+        } else {
+            document.getElementById('settingsResourcepacksSelected').innerHTML = `${selectedPacks.length} paquetes seleccionados`
+        }
+    }
+
+    // Add options
     for(let opt of arr) {
         const d = document.createElement('DIV')
         d.innerHTML = opt.name
         d.setAttribute('value', opt.fullName)
-        if(opt.fullName === selected) {
+
+        // Mark as selected if in the selected array
+        if (selectedPacks.includes(opt.fullName)) {
             d.setAttribute('selected', '')
-            document.getElementById('settingsResourcepacksSelected').innerHTML = opt.name
         }
+
+        // Style for multi-select
+        d.style.position = 'relative'
+        if (d.hasAttribute('selected')) {
+            d.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+        }
+
         d.addEventListener('click', function(e) {
-            this.parentNode.previousElementSibling.innerHTML = this.innerHTML
-            for(let sib of this.parentNode.children){
-                sib.removeAttribute('selected')
+            const isCtrlPressed = e.ctrlKey || e.metaKey
+            const value = this.getAttribute('value')
+
+            // Handle OFF option specially - it deselects everything else
+            if (value === 'OFF') {
+                // Clear all selections
+                for(let sib of this.parentNode.children){
+                    if (sib.tagName === 'DIV' && sib !== header) {
+                        sib.removeAttribute('selected')
+                        sib.style.backgroundColor = ''
+                    }
+                }
+                this.setAttribute('selected', '')
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                selectedPacks = ['OFF']
+            } else {
+                // If ctrl is not pressed, clear other selections
+                if (!isCtrlPressed) {
+                    for(let sib of this.parentNode.children){
+                        if (sib.tagName === 'DIV' && sib !== header) {
+                            sib.removeAttribute('selected')
+                            sib.style.backgroundColor = ''
+                        }
+                    }
+                    selectedPacks = []
+                }
+
+                // Toggle this item
+                if (this.hasAttribute('selected')) {
+                    this.removeAttribute('selected')
+                    this.style.backgroundColor = ''
+                    selectedPacks = selectedPacks.filter(p => p !== value)
+                } else {
+                    this.setAttribute('selected', '')
+                    this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                    selectedPacks.push(value)
+
+                    // Remove OFF if it's in the selection
+                    const offOption = this.parentNode.querySelector('[value="OFF"]')
+                    if (offOption && offOption.hasAttribute('selected')) {
+                        offOption.removeAttribute('selected')
+                        offOption.style.backgroundColor = ''
+                        selectedPacks = selectedPacks.filter(p => p !== 'OFF')
+                    }
+                }
+
+                // If nothing is selected, select OFF
+                if (selectedPacks.length === 0) {
+                    const offOption = this.parentNode.querySelector('[value="OFF"]')
+                    if (offOption) {
+                        offOption.setAttribute('selected', '')
+                        offOption.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                        selectedPacks = ['OFF']
+                    }
+                }
             }
-            this.setAttribute('selected', '')
-            closeSettingsSelect()
+
+            updateSelectedDisplay()
+
+            // Don't close the dropdown on click when using multi-select
+            e.stopPropagation()
         })
+
         cont.appendChild(d)
     }
+
+    // Add a close button at the bottom
+    const closeButton = document.createElement('DIV')
+    closeButton.innerHTML = 'Cerrar'
+    closeButton.className = 'resourcepackOptionsCloseButton'
+    closeButton.style.textAlign = 'center'
+    closeButton.style.padding = '8px'
+    closeButton.style.marginTop = '5px'
+    closeButton.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
+    closeButton.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)'
+    closeButton.style.cursor = 'pointer'
+    closeButton.addEventListener('click', function(e) {
+        closeSettingsSelect()
+        e.stopPropagation()
+    })
+    cont.appendChild(closeButton)
+
+    // Initialize the display
+    updateSelectedDisplay()
 }
 
 function saveResourcepackSettings(){
-    let sel = 'OFF'
-    for(let opt of document.getElementById('settingsResourcepacksOptions').childNodes){
-        if(opt.hasAttribute('selected')){
-            sel = opt.getAttribute('value')
+    // Get all selected resourcepacks
+    const selectedPacks = []
+
+    // Skip the first element which is the header
+    const options = document.getElementById('settingsResourcepacksOptions').childNodes
+    for(let i = 1; i < options.length; i++) {
+        const opt = options[i]
+        if(opt.hasAttribute && opt.hasAttribute('selected')){
+            selectedPacks.push(opt.getAttribute('value'))
         }
     }
-    DropinModUtil.setEnabledResourcepack(CACHE_SETTINGS_INSTANCE_DIR, sel)
+
+    // If nothing is selected or only OFF is selected
+    if(selectedPacks.length === 0 || (selectedPacks.length === 1 && selectedPacks[0] === 'OFF')) {
+        DropinModUtil.setEnabledResourcepack(CACHE_SETTINGS_INSTANCE_DIR, 'OFF')
+    } else {
+        DropinModUtil.setEnabledResourcepack(CACHE_SETTINGS_INSTANCE_DIR, selectedPacks)
+    }
 }
 
 function bindResourcepackButton() {
@@ -1281,8 +1410,8 @@ settingsMaxRAMRange.onchange = (e) => {
 
 /**
  * Calculate common values for a ranged slider.
- * 
- * @param {Element} v The range slider to calculate against. 
+ *
+ * @param {Element} v The range slider to calculate against.
  * @returns {Object} An object with meta values for the provided ranged slider.
  */
 function calculateRangeSliderMeta(v){
@@ -1326,7 +1455,7 @@ function bindRangeSlider(){
 
                 // Distance from the beginning of the bar in pixels.
                 const diff = e.pageX - v.offsetLeft - track.offsetWidth/2
-                
+
                 // Don't move the track off the bar.
                 if(diff >= 0 && diff <= v.offsetWidth-track.offsetWidth/2){
 
@@ -1342,12 +1471,12 @@ function bindRangeSlider(){
                 }
             }
         }
-    }) 
+    })
 }
 
 /**
  * Update a ranged slider's value and position.
- * 
+ *
  * @param {Element} element The ranged slider to update.
  * @param {string | number} value The new value for the ranged slider.
  * @param {number} notch The notch that the slider should now be at.
@@ -1356,7 +1485,7 @@ function updateRangedSlider(element, value, notch){
     const oldVal = element.getAttribute('value')
     const bar = element.getElementsByClassName('rangeSliderBar')[0]
     const track = element.getElementsByClassName('rangeSliderTrack')[0]
-    
+
     element.setAttribute('value', value)
 
     if(notch < 0){
@@ -1393,7 +1522,7 @@ function populateMemoryStatus(){
 /**
  * Validate the provided executable path and display the data on
  * the UI.
- * 
+ *
  * @param {string} execPath The executable path to populate against.
  */
 async function populateJavaExecDetails(execPath){
@@ -1470,7 +1599,7 @@ document.getElementById('settingsAboutDevToolsButton').onclick = (e) => {
 
 /**
  * Return whether or not the provided version is a prerelease.
- * 
+ *
  * @param {string} version The semver version to test.
  * @returns {boolean} True if the version is a prerelease, otherwise false.
  */
@@ -1482,7 +1611,7 @@ function isPrerelease(version){
 /**
  * Utility method to display version information on the
  * About and Update settings tabs.
- * 
+ *
  * @param {string} version The semver version to display.
  * @param {Element} valueElement The value element.
  * @param {Element} titleElement The title element.
@@ -1518,7 +1647,7 @@ function populateReleaseNotes(){
         success: (data) => {
             const version = 'v' + remote.app.getVersion()
             const entries = $(data).find('entry')
-            
+
             for(let i=0; i<entries.length; i++){
                 const entry = $(entries[i])
                 let id = entry.find('id').text()
@@ -1562,7 +1691,7 @@ const settingsUpdateActionButton   = document.getElementById('settingsUpdateActi
 
 /**
  * Update the properties of the update action button.
- * 
+ *
  * @param {string} text The new button text.
  * @param {boolean} disabled Optional. Disable or enable the button
  * @param {function} handler Optional. New button event handler.
@@ -1577,7 +1706,7 @@ function settingsUpdateButtonStatus(text, disabled = false, handler = null){
 
 /**
  * Populate the update tab with relevant information.
- * 
+ *
  * @param {Object} data The update data.
  */
 function populateSettingsUpdateInformation(data){
@@ -1587,7 +1716,7 @@ function populateSettingsUpdateInformation(data){
         settingsUpdateChangelogTitle.innerHTML = data.releaseName
         settingsUpdateChangelogText.innerHTML = data.releaseNotes
         populateVersionInformation(data.version, settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
-        
+
         if(process.platform === 'darwin'){
             settingsUpdateButtonStatus(Lang.queryJS('settings.updates.downloadButton'), false, () => {
                 shell.openExternal(data.darwindownload)
@@ -1610,7 +1739,7 @@ function populateSettingsUpdateInformation(data){
 
 /**
  * Prepare update tab for display.
- * 
+ *
  * @param {Object} data The update data.
  */
 function prepareUpdateTab(data = null){
@@ -1623,7 +1752,7 @@ function prepareUpdateTab(data = null){
 
 /**
   * Prepare the entire settings UI.
-  * 
+  *
   * @param {boolean} first Whether or not it is the first load.
   */
 async function prepareSettings(first = false) {

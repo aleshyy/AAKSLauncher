@@ -22,7 +22,7 @@ const RESOURCEPACK_CONFIG = 'options.txt'
 /**
  * Validate that the given directory exists. If not, it is
  * created.
- * 
+ *
  * @param {string} modsDir The path to the mods directory.
  */
 exports.validateDir = function(dir) {
@@ -32,10 +32,10 @@ exports.validateDir = function(dir) {
 /**
  * Scan for drop-in mods in both the mods folder and version
  * safe mods folder.
- * 
+ *
  * @param {string} modsDir The path to the mods directory.
  * @param {string} version The minecraft version of the server configuration.
- * 
+ *
  * @returns {{fullName: string, name: string, ext: string, disabled: boolean}[]}
  * An array of objects storing metadata about each discovered mod.
  */
@@ -76,7 +76,7 @@ exports.scanForDropinMods = function(modsDir, version) {
 
 /**
  * Add dropin mods.
- * 
+ *
  * @param {FileList} files The files to add.
  * @param {string} modsDir The path to the mods directory.
  */
@@ -94,10 +94,10 @@ exports.addDropinMods = function(files, modsdir) {
 
 /**
  * Delete a drop-in mod from the file system.
- * 
+ *
  * @param {string} modsDir The path to the mods directory.
  * @param {string} fullName The fullName of the discovered mod to delete.
- * 
+ *
  * @returns {Promise.<boolean>} True if the mod was deleted, otherwise false.
  */
 exports.deleteDropinMod = async function(modsDir, fullName){
@@ -114,13 +114,13 @@ exports.deleteDropinMod = async function(modsDir, fullName){
 }
 
 /**
- * Toggle a discovered mod on or off. This is achieved by either 
+ * Toggle a discovered mod on or off. This is achieved by either
  * adding or disabling the .disabled extension to the local file.
- * 
+ *
  * @param {string} modsDir The path to the mods directory.
  * @param {string} fullName The fullName of the discovered mod to toggle.
  * @param {boolean} enable Whether to toggle on or off the mod.
- * 
+ *
  * @returns {Promise.<void>} A promise which resolves when the mod has
  * been toggled. If an IO error occurs the promise will be rejected.
  */
@@ -141,7 +141,7 @@ exports.toggleDropinMod = function(modsDir, fullName, enable){
 
 /**
  * Check if a drop-in mod is enabled.
- * 
+ *
  * @param {string} fullName The fullName of the discovered mod to toggle.
  * @returns {boolean} True if the mod is enabled, otherwise false.
  */
@@ -151,9 +151,9 @@ exports.isDropinModEnabled = function(fullName){
 
 /**
  * Scan for shaderpacks inside the shaderpacks folder.
- * 
+ *
  * @param {string} instanceDir The path to the server instance directory.
- * 
+ *
  * @returns {{fullName: string, name: string}[]}
  * An array of objects storing metadata about each discovered shaderpack.
  */
@@ -181,9 +181,9 @@ exports.scanForShaderpacks = function(instanceDir){
 /**
  * Read the optionsshaders.txt file to locate the current
  * enabled pack. If the file does not exist, OFF is returned.
- * 
+ *
  * @param {string} instanceDir The path to the server instance directory.
- * 
+ *
  * @returns {string} The file name of the enabled shaderpack.
  */
 exports.getEnabledShaderpack = function(instanceDir){
@@ -204,7 +204,7 @@ exports.getEnabledShaderpack = function(instanceDir){
 
 /**
  * Set the enabled shaderpack.
- * 
+ *
  * @param {string} instanceDir The path to the server instance directory.
  * @param {string} pack the file name of the shaderpack.
  */
@@ -224,7 +224,7 @@ exports.setEnabledShaderpack = function(instanceDir, pack){
 
 /**
  * Add shaderpacks.
- * 
+ *
  * @param {FileList} files The files to add.
  * @param {string} instanceDir The path to the server instance directory.
  */
@@ -244,9 +244,9 @@ exports.addShaderpacks = function(files, instanceDir) {
 
 /**
  * Scan for resourcepacks inside the resourcepacks folder.
- * 
+ *
  * @param {string} instanceDir The path to the server instance directory.
- * 
+ *
  * @returns {{fullName: string, name: string}[]}
  * An array of objects storing metadata about each discovered resourcepack.
  */
@@ -273,10 +273,10 @@ exports.scanForResourcepacks = function(instanceDir) {
 
 /**
  * Read the options.txt file to locate the current
- * enabled pack. If the file does not exist, OFF is returned.
- * 
+ * enabled packs. If the file does not exist, OFF is returned.
+ *
  * @param {string} instanceDir The path to the server instance directory.
- * 
+ *
  * @returns {string[]} An array of enabled resourcepacks.
  */
 exports.getEnabledResourcepack = function(instanceDir) {
@@ -287,9 +287,14 @@ exports.getEnabledResourcepack = function(instanceDir) {
         const buf = fs.readFileSync(optionsResourcepacks, { encoding: 'utf-8' })
         const match = RESOURCEPACK_OPTION.exec(buf)
         if (match != null) {
-            return match[1]
-                .split(',')
-                .map(pack => pack.trim().replace(/^\"|\"$/g, '')) // Maneja espacios y comillas
+            // If there's content between the brackets
+            if (match[1].trim()) {
+                return match[1]
+                    .split(',')
+                    .map(pack => pack.trim().replace(/^\"|\"$/g, '')) // Handle spaces and quotes
+            } else {
+                return ['OFF'] // Empty array means no packs selected
+            }
         } else {
             console.warn('ADVERTENCIA: Regex de resourcepack falló.')
         }
@@ -298,19 +303,27 @@ exports.getEnabledResourcepack = function(instanceDir) {
 }
 
 /**
- * Set the enabled resourcepack.
- * 
+ * Set the enabled resourcepacks.
+ *
  * @param {string} instanceDir The path to the server instance directory.
- * @param {string[]} packs Array of resourcepacks to enable.
+ * @param {string|string[]} packs Single resourcepack or array of resourcepacks to enable.
  */
 exports.setEnabledResourcepack = function(instanceDir, packs) {
     exports.validateDir(instanceDir)
 
     const optionsResourcepacks = path.join(instanceDir, RESOURCEPACK_CONFIG)
 
-    // Convertir packs en un array si es un string
+    // Convert packs to an array if it's a string
     if (typeof packs === 'string') {
         packs = [packs]
+    }
+
+    // Filter out any empty values
+    packs = packs.filter(pack => pack && pack.trim() !== '')
+
+    // If no valid packs, set to OFF
+    if (packs.length === 0 || (packs.length === 1 && packs[0] === 'OFF')) {
+        packs = ['OFF']
     }
 
     let buf
@@ -326,7 +339,7 @@ exports.setEnabledResourcepack = function(instanceDir, packs) {
 
 /**
  * Add resourcepacks.
- * 
+ *
  * @param {FileList} files The files to add.
  * @param {string} instanceDir The path to the server instance directory.
  */
