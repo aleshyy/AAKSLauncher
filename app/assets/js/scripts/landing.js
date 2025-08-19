@@ -98,8 +98,60 @@ function setLaunchEnabled(val){
     document.getElementById('launch_button').disabled = !val
 }
 
+// Track if Minecraft is currently running
+let isMinecraftRunning = false
+
+/**
+ * Initialize the game launch process and set up process monitoring.
+ */
+async function initializeLaunch() {
+    loggerLanding.info('Iniciando lanzamiento del juego.')
+    try {
+        const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
+        const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())
+        if(jExe == null){
+            await asyncSystemScan(server.effectiveJavaOptions)
+        } else {
+            setLaunchDetails(Lang.queryJS('landing.launch.pleaseWait'))
+            toggleLaunchArea(true)
+            setLaunchPercentage(0, 100)
+
+            const details = await validateSelectedJvm(ensureJavaDirIsRoot(jExe), server.effectiveJavaOptions.supported)
+            if(details != null){
+                loggerLanding.info('Detalles JVM', details)
+                await dlAsync()
+                isMinecraftRunning = true
+            } else {
+                await asyncSystemScan(server.effectiveJavaOptions)
+            }
+        }
+    } catch(err) {
+        loggerLanding.error('Error no manejado durante el proceso de lanzamiento.', err)
+        showLaunchFailure(Lang.queryJS('landing.launch.failureTitle'), Lang.queryJS('landing.launch.failureText'))
+    }
+}
+
 // Bind launch button
 document.getElementById('launch_button').addEventListener('click', async e => {
+    // If Minecraft is already running, show confirmation dialog
+    if (isMinecraftRunning) {
+        setOverlayContent(
+            'Confirmación',
+            '¿Seguro que querés lanzarlo de nuevo? Ya está en ejecución.',
+            'Aceptar',
+            'Cancelar'
+        )
+        setOverlayHandler(() => {
+            toggleOverlay(false)
+            initializeLaunch() // Launch another instance
+        })
+        setDismissHandler(() => {
+            toggleOverlay(false)
+        })
+        toggleOverlay(true, true)
+        return
+    }
+
     loggerLanding.info('Lanzando el juego.')
     try {
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
@@ -556,6 +608,17 @@ async function dlAsync(login = true) {
         loggerLaunchSuite.info(`Enviando la cuenta seleccionada (${authUser.displayName}) al procesador.`)
         let pb = new ProcessBuilder(serv, versionData, modLoaderData, authUser, remote.app.getVersion())
         setLaunchDetails(Lang.queryJS('landing.dlAsync.launchingGame'))
+        
+        // Update isMinecraftRunning when the process starts
+        isMinecraftRunning = true
+        
+        // Monitor when the game exits
+        if (proc) {
+            proc.on('close', () => {
+                isMinecraftRunning = false
+                proc = null
+            })
+        }
 
         // const SERVER_JOINED_REGEX = /\[.+\]: \[CHAT\] [a-zA-Z0-9_]{1,16} joined the game/
         const SERVER_JOINED_REGEX = new RegExp(`\\[.+\\]: \\[CHAT\\] ${authUser.displayName} entró al juego`)
@@ -614,16 +677,22 @@ async function dlAsync(login = true) {
 
             setLaunchDetails(Lang.queryJS('landing.dlAsync.doneEnjoyServer'))
 
+            // Listen for process close to clean up
+            proc.on('close', (code, signal) => {
+                loggerLanding.info('Juego cerrado, código:', code)
+                isMinecraftRunning = false
+                if(hasRPC) {
+                    loggerLaunchSuite.info('Apagando Discord RPC.')
+                    DiscordWrapper.shutdownRPC()
+                    hasRPC = false
+                }
+                proc = null
+            })
+
             // Init Discord Hook
             if(distro.rawDistribution.discord != null && serv.rawServer.discord != null){
                 DiscordWrapper.initRPC(distro.rawDistribution.discord, serv.rawServer.discord)
                 hasRPC = true
-                proc.on('close', (code, signal) => {
-                    loggerLaunchSuite.info('Apagando Discord RPC.')
-                    DiscordWrapper.shutdownRPC()
-                    hasRPC = false
-                    proc = null
-                })
             }
 
         } catch(err) {
@@ -677,8 +746,6 @@ function slide_(up){
         lCLRight.style.top = '-200vh'
         newsBtn.style.top = '130vh'
         newsContainer.style.top = '0px'
-        //date.toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'})
-        //landingContainer.style.background = 'rgba(29, 29, 29, 0.55)'
         landingContainer.style.background = 'rgba(0, 0, 0, 0.50)'
         setTimeout(() => {
             if(newsGlideCount === 1){
@@ -849,13 +916,14 @@ async function initNews(){
 
         const lN = newsArr[0]
         const cached = ConfigManager.getNewsCache()
+
+        const newDateMs = lN.dateMs
         let newHash = await digestMessage(lN.content)
-        let newDate = new Date(lN.date)
         let isNew = false
 
         if(cached.date != null && cached.content != null){
 
-            if(new Date(cached.date) >= newDate){
+            if(Number(cached.date) >= newDateMs){
 
                 // Compare Content
                 if(cached.content !== newHash){
@@ -880,7 +948,7 @@ async function initNews(){
 
         if(isNew){
             ConfigManager.setNewsCache({
-                date: newDate.getTime(),
+                date: newDateMs,     // guardo timestamp
                 content: newHash,
                 dismissed: false
             })
@@ -914,11 +982,6 @@ document.addEventListener('keydown', (e) => {
         if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
             document.getElementById(e.key === 'ArrowRight' ? 'newsNavigateRight' : 'newsNavigateLeft').click()
         }
-        // Interferes with scrolling an article using the down arrow.
-        // Not sure of a straight forward solution at this point.
-        // if(e.key === 'ArrowDown'){
-        //     document.getElementById('newsButton').click()
-        // }
     } else {
         if(getCurrentView() === VIEWS.landing){
             if(e.key === 'ArrowUp'){
@@ -975,11 +1038,12 @@ async function loadNews(){
                 const articles = []
 
                 for(let i=0; i<items.length; i++){
-                // JQuery Element
+                    // JQuery Element
                     const el = $(items[i])
 
-                    // Resolve date.
-                    const date = new Date(el.find('pubDate').text()).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'})
+                    const rawDate = new Date(el.find('pubDate').text())
+                    const date = rawDate.toLocaleDateString('es-UY', {month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric'})
+                    const dateMs = rawDate.getTime()
 
                     // Resolve comments.
                     let comments = el.find('slash\\:comments').text() || '0'
@@ -1002,7 +1066,9 @@ async function loadNews(){
                         {
                             link,
                             title,
-                            date,
+                            date,        // string para mostrar
+                            rawDate,     // objeto Date por si lo necesitás
+                            dateMs,      // timestamp para ordenar/compare cache
                             author,
                             content,
                             comments,
@@ -1010,17 +1076,20 @@ async function loadNews(){
                         }
                     )
                 }
+
+                articles.sort((a, b) => b.dateMs - a.dateMs)
+
                 resolve({
                     articles
                 })
             },
+            error: () => {
+                resolve({ articles: null })
+            },
             timeout: 2500
-        }).catch(err => {
-            resolve({
-                articles: null
-            })
         })
     })
 
     return await promise
 }
+

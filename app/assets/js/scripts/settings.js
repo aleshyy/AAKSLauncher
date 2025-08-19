@@ -1,6 +1,7 @@
 // Requirements
 const os     = require('os')
 const semver = require('semver')
+const fs    = require('fs-extra')
 
 const DropinModUtil  = require('./assets/js/dropinmodutil')
 const { MSFT_OPCODE, MSFT_REPLY_TYPE, MSFT_ERROR } = require('./assets/js/ipcconstants')
@@ -986,33 +987,145 @@ async function resolveShaderpacksForUI(){
 function setShadersOptions(arr, selected){
     const cont = document.getElementById('settingsShadersOptions')
     cont.innerHTML = ''
+
+    // Create a header
+    const header = document.createElement('DIV')
+    header.innerHTML = 'Selecciona un shader'
+    header.className = 'resourcepackOptionsHeader'
+    header.style.fontStyle = 'italic'
+    header.style.fontSize = '12px'
+    header.style.color = '#ccc'
+    header.style.padding = '5px'
+    header.style.borderBottom = '1px solid rgba(255, 255, 255, 0.2)'
+    header.style.marginBottom = '5px'
+    cont.appendChild(header)
+
+    // Add options
     for(let opt of arr) {
         const d = document.createElement('DIV')
         d.innerHTML = opt.name
         d.setAttribute('value', opt.fullName)
+        
+        // Mark as selected if it matches
         if(opt.fullName === selected) {
             d.setAttribute('selected', '')
             document.getElementById('settingsShadersSelected').innerHTML = opt.name
+            d.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
         }
+
         d.addEventListener('click', function(e) {
-            this.parentNode.previousElementSibling.innerHTML = this.innerHTML
-            for(let sib of this.parentNode.children){
-                sib.removeAttribute('selected')
+            const value = this.getAttribute('value')
+            const isCurrentlySelected = this.hasAttribute('selected')
+
+            // Si el shader actual está seleccionado y lo clickeamos de nuevo, desactivarlo
+            if (isCurrentlySelected) {
+                this.removeAttribute('selected')
+                this.style.backgroundColor = ''
+                document.getElementById('settingsShadersSelected').innerHTML = 'Ninguno (desactivado)'
+
+            } else {
+                // Si seleccionamos uno nuevo, deseleccionar todos los demás
+                for(let sib of this.parentNode.children){
+                    if(sib.hasAttribute && sib.hasAttribute('selected')) {
+                        sib.removeAttribute('selected')
+                        sib.style.backgroundColor = ''
+                    }
+                }
+                
+                // Seleccionar este
+                this.setAttribute('selected', '')
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                document.getElementById('settingsShadersSelected').innerHTML = opt.name
             }
-            this.setAttribute('selected', '')
+            
             closeSettingsSelect()
         })
         cont.appendChild(d)
     }
+
+    // Add close button
+    const closeButton = document.createElement('DIV')
+    closeButton.innerHTML = 'Cerrar'
+    closeButton.className = 'resourcepackOptionsCloseButton'
+    closeButton.style.textAlign = 'center'
+    closeButton.style.padding = '8px'
+    closeButton.style.marginTop = '5px'
+    closeButton.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
+    closeButton.style.borderTop = '1px solid rgba(255, 255, 255, 0.2)'
+    closeButton.style.cursor = 'pointer'
+    closeButton.addEventListener('click', function(e) {
+        closeSettingsSelect()
+        e.stopPropagation()
+    })
+    cont.appendChild(closeButton)
 }
 
 function saveShaderpackSettings(){
-    let sel = 'OFF'
-    for(let opt of document.getElementById('settingsShadersOptions').childNodes){
-        if(opt.hasAttribute('selected')){
+    let sel = 'OFF' // Por defecto, shaders desactivados
+    const options = document.getElementById('settingsShadersOptions').childNodes
+    // Skip the first element (header) and last element (close button)
+    for(let i = 1; i < options.length - 1; i++) {
+        const opt = options[i]
+        if(opt.hasAttribute && opt.hasAttribute('selected')){
             sel = opt.getAttribute('value')
+            break // Solo necesitamos el primer (y único) shader seleccionado
         }
     }
+    
+    // Verificar que el shader pack existe antes de activarlo
+    if (sel !== 'OFF') {
+        const shaderpackPath = path.join(CACHE_SETTINGS_INSTANCE_DIR, 'shaderpacks', sel)
+        if (!fs.existsSync(shaderpackPath)) {
+            console.error('El shader pack seleccionado no existe:', shaderpackPath)
+            sel = 'OFF' // Si no existe, desactivar shaders
+        }
+    }
+
+    // Guardar la selección en config/iris.properties
+    const configDir = path.join(CACHE_SETTINGS_INSTANCE_DIR, 'config')
+    const irisConfigPath = path.join(configDir, 'iris.properties')
+    try {
+        // Asegurar que el directorio config existe
+        if (!fs.existsSync(configDir)) {
+            fs.mkdirSync(configDir, { recursive: true })
+        }
+
+        // Crear o actualizar iris.properties
+        let irisConfig = {
+            allowUnknownShaders: 'false',
+            colorSpace: 'SRGB',
+            disableUpdateMessage: 'false',
+            enableDebugOptions: 'false',
+            enableShaders: sel !== 'OFF' ? 'true' : 'false',
+            maxShadowRenderDistance: '32',
+            shaderPack: sel === 'OFF' ? '' : sel
+        }
+
+        // Si el archivo existe, leer las configuraciones existentes
+        if (fs.existsSync(irisConfigPath)) {
+            const existingConfig = fs.readFileSync(irisConfigPath, 'utf-8')
+            existingConfig.split('\n').forEach(line => {
+                if (line && !line.startsWith('#')) {
+                    const [key, value] = line.split('=')
+                    if (key && !['enableShaders', 'shaderPack'].includes(key)) {
+                        irisConfig[key] = value
+                    }
+                }
+            })
+        }
+
+        // Crear el contenido del archivo
+        let content = '#This file stores configuration options for Iris, such as the currently active shaderpack\n'
+        content += `#${new Date().toString()}\n`
+        Object.entries(irisConfig).forEach(([key, value]) => {
+            content += `${key}=${value}\n`
+        })
+
+        fs.writeFileSync(irisConfigPath, content)
+    } catch (err) {
+        console.error('Error al guardar la configuración de Iris:', err)
+    }
+
     DropinModUtil.setEnabledShaderpack(CACHE_SETTINGS_INSTANCE_DIR, sel)
 }
 
@@ -1039,9 +1152,14 @@ function bindShaderpackButton() {
         spBtn.removeAttribute('drag')
         e.preventDefault()
 
-        DropinModUtil.addShaderpacks(e.dataTransfer.files, CACHE_SETTINGS_INSTANCE_DIR)
-        saveShaderpackSettings()
-        await resolveShaderpacksForUI()
+        const files = e.dataTransfer.files
+        const validFiles = Array.from(files).filter(f => DropinModUtil.SHADER_REGEX.test(f.name))
+
+        if (validFiles.length > 0) {
+            DropinModUtil.addShaderpacks(files, CACHE_SETTINGS_INSTANCE_DIR)
+            saveShaderpackSettings()
+            await resolveShaderpacksForUI()
+        }
     }
 }
 
@@ -1133,28 +1251,32 @@ function setResourcepackOptions(arr, selected){
                 this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
                 selectedPacks = ['OFF']
             } else {
-                // If ctrl is not pressed, clear other selections
-                if (!isCtrlPressed) {
-                    for(let sib of this.parentNode.children){
-                        if (sib.tagName === 'DIV' && sib !== header) {
-                            sib.removeAttribute('selected')
-                            sib.style.backgroundColor = ''
-                        }
-                    }
-                    selectedPacks = []
-                }
-
-                // Toggle this item
+                // Si está seleccionado, simplemente deseleccionar
                 if (this.hasAttribute('selected')) {
                     this.removeAttribute('selected')
                     this.style.backgroundColor = ''
                     selectedPacks = selectedPacks.filter(p => p !== value)
                 } else {
+                    // Si no está seleccionado, siempre seleccionarlo 
+                    // (sin deseleccionar los otros a menos que no haya Ctrl)
                     this.setAttribute('selected', '')
                     this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
-                    selectedPacks.push(value)
+                    
+                    if (!isCtrlPressed) {
+                        // Si no se presiona Ctrl, mantener solo este
+                        for(let sib of this.parentNode.children){
+                            if (sib !== this && sib.tagName === 'DIV' && sib !== header) {
+                                sib.removeAttribute('selected')
+                                sib.style.backgroundColor = ''
+                            }
+                        }
+                        selectedPacks = [value]
+                    } else {
+                        // Si se presiona Ctrl, agregar a la selección existente
+                        selectedPacks.push(value)
+                    }
 
-                    // Remove OFF if it's in the selection
+                    // Remover OFF si está seleccionado
                     const offOption = this.parentNode.querySelector('[value="OFF"]')
                     if (offOption && offOption.hasAttribute('selected')) {
                         offOption.removeAttribute('selected')
