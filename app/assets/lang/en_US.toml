@@ -20,25 +20,11 @@ newsErrorRetryButton = "Retry"
 newsErrorNoneSpan = "No news"
 
 [ejs.login]
-loginCancelText = "Cancel"
-loginSubheader = "Log in to your account"
-loginEmailError = "* Invalid value"
-loginEmailPlaceholder = "EMAIL OR USERNAME"
-loginPasswordError = "* Required"
-loginPasswordPlaceholder = "PASSWORD"
-loginForgotPasswordLink = "https://minecraft.net/password/forgot/"
-loginForgotPasswordText = "forgot your password?"
-loginRememberMeText = "remember me?"
-loginButtonText = "login"
-loginNeedAccountLink = "https://minecraft.net/store/minecraft-java-edition/"
-loginNeedAccountText = "Need an account?"
-loginPasswordDisclaimer1 = "Your password is sent directly to Mojang AB and is never stored."
-loginPasswordDisclaimer2 = "{appName} is not affiliated with Mojang AB."
-
-[ejs.loginOptions]
-loginOptionsTitle = "Add an account"
+loginTitle = "Add an account"
 loginWithMicrosoft = "Log in with Microsoft"
 cancelButton = "Cancel"
+loginDisclaimer1 = "Your password is sent directly to Microsoft and is never stored."
+loginDisclaimer2 = "{appName} is not affiliated with, authorized, or endorsed by Mojang Studios."
 
 [ejs.overlay]
 serverSelectHeader = "Available servers"

@@ -20,25 +20,11 @@ newsErrorRetryButton = "Intentar de nuevo"
 newsErrorNoneSpan = "Sin noticias"
 
 [ejs.login]
-loginCancelText = "Cancelar"
-loginSubheader = "Ingresá a tu cuenta"
-loginEmailError = "* Valor inválido"
-loginEmailPlaceholder = "CORREO o USUARIO"
-loginPasswordError = "* Requerido"
-loginPasswordPlaceholder = "CONTRASEÑA"
-loginForgotPasswordLink = "https://minecraft.net/password/forgot/"
-loginForgotPasswordText = "olvidaste tu contraseña?"
-loginRememberMeText = "recordarme?"
-loginButtonText = "entrar"
-loginNeedAccountLink = "https://minecraft.net/store/minecraft-java-edition/"
-loginNeedAccountText = "¿Necesitás una cuenta?"
-loginPasswordDisclaimer1 = "Tu contraseña se envia directamente a Mojang AB y nunca se almacena."
-loginPasswordDisclaimer2 = "{appName} no esta afiliado con Mojang AB."
-
-[ejs.loginOptions]
-loginOptionsTitle = "Agregá una cuenta"
+loginTitle = "Agregá una cuenta"
 loginWithMicrosoft = "Iniciar sesión con Microsoft"
 cancelButton = "Cancelar"
+loginDisclaimer1 = "Tu contraseña se envía directamente a Microsoft y nunca se almacena."
+loginDisclaimer2 = "{appName} no está afiliado ni respaldado por Mojang Studios."
 
 [ejs.overlay]
 serverSelectHeader = "Servidores disponibles"
@@ -241,7 +227,7 @@ selectedButton = "Cuenta actual &#10004;"
 
 [js.settings.authAccountLogout]
 lastAccountWarningTitle = "Advertencia<br>Esta es tu última cuenta"
-lastAccountWarningMessage = "Para usar el launcher debes estar logueado en al menos una cuenta. Tenés que iniciar sesión de nuevo después.<br><br>¿Estás seguro de que querés cerrar sesión?"
+lastAccountWarningMessage = "Para usar el launcher tenés que tener al menos una cuenta. Tenés que iniciar sesión de nuevo después.<br><br>¿Estás seguro de que querés cerrar sesión?"
 confirmButton = "Confirmar"
 cancelButton = "Cancelar"
 
@@ -264,9 +250,9 @@ mainServer = "Recomendado"
 
 [js.settings.java]
 selectedJava = "Seleccionado: Java {version} ({vendor})"
-invalidSelection = "Selección Inválida"
+invalidSelection = "Selección inválida"
 requiresJava = "Requiere Java {major} x64."
-availableOptions = "Opciones Disponibles para Java {major} (HotSpot VM)"
+availableOptions = "Opciones disponibles para Java {major} (HotSpot VM)"
 
 [js.settings.about]
 preReleaseTitle = "Beta"
@@ -289,7 +275,7 @@ okButton = "Aceptar"
 
 [js.uibinder.startup]
 fatalErrorTitle = "Error fatal: No se pudo cargar el índice de distribución"
-fatalErrorMessage = "No se pudo establecer una conexión con nuestros servidores para descargar el índice de distribución. No se encontraron copias locales disponibles para cargar. <br><br>El índice de distribución es un archivo esencial que proporciona la información más reciente del servidor. El launcher no puede iniciarse sin él. Asegurate de estar conectado a Internet y vuelve a lanzar la aplicación."
+fatalErrorMessage = "No se pudo establecer una conexión con nuestros servidores para descargar el índice de distribución. No se encontraron copias locales disponibles para cargar. <br><br>El índice de distribución es un archivo esencial que proporciona la información más reciente del servidor. El launcher no puede iniciarse sin él. Asegurate de estar conectado a Internet y vuelve a lanzar el launcher."
 closeButton = "Salir"
 
 [js.uibinder.validateAccount]
