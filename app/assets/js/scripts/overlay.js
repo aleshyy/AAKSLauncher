@@ -270,7 +270,20 @@ function setAccountListingHandlers(){
 async function populateServerListings(){
     const distro = await DistroAPI.getDistribution()
     const giaSel = ConfigManager.getSelectedServer()
-    const servers = distro.servers
+    const servers = [...distro.servers].sort((a, b) => {
+        const versionA = a.rawServer.minecraftVersion.split('.')
+        const versionB = b.rawServer.minecraftVersion.split('.')
+        
+        // Comparar versiones por componentes
+        for(let i = 0; i < Math.max(versionA.length, versionB.length); i++) {
+            const numA = parseInt(versionA[i] || 0)
+            const numB = parseInt(versionB[i] || 0)
+            if(numA !== numB) {
+                return numB - numA // Orden descendente
+            }
+        }
+        return 0
+    })
     let htmlString = ''
     for(const serv of servers){
         htmlString += `<button class="serverListing" servid="${serv.rawServer.id}" ${serv.rawServer.id === giaSel ? 'selected' : ''}>
