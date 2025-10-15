@@ -270,7 +270,14 @@ function setAccountListingHandlers(){
 async function populateServerListings(){
     const distro = await DistroAPI.getDistribution()
     const giaSel = ConfigManager.getSelectedServer()
-    const servers = [...distro.servers].sort((a, b) => {
+    const servers = [...distro.servers]
+    
+    // Separar el servidor seleccionado si existe
+    const selectedServerIndex = servers.findIndex(s => s.rawServer.id === giaSel)
+    const selectedServer = selectedServerIndex !== -1 ? servers.splice(selectedServerIndex, 1)[0] : null
+    
+    // Ordenar los servidores restantes por versión
+    servers.sort((a, b) => {
         const versionA = a.rawServer.minecraftVersion.split('.')
         const versionB = b.rawServer.minecraftVersion.split('.')
         
@@ -284,6 +291,12 @@ async function populateServerListings(){
         }
         return 0
     })
+    
+    // Si hay un servidor seleccionado, ponerlo al principio
+    if(selectedServer) {
+        servers.unshift(selectedServer)
+    }
+    
     let htmlString = ''
     for(const serv of servers){
         htmlString += `<button class="serverListing" servid="${serv.rawServer.id}" ${serv.rawServer.id === giaSel ? 'selected' : ''}>
